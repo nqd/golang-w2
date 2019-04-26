@@ -13,20 +13,13 @@ import (
 	"log"
 	"net/http"
 
-	// WARNING!
-	// Change this to a fully-qualified import path
-	// once you place this file into your project.
-	// For example,
-	//
-	//    sw "github.com/myname/myrepo/go"
-	//
-	sw "./go"
+	"github.com/nqd/golang-w2/handlers"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	router := sw.NewRouter()
+	router := handlers.NewRouter()
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
