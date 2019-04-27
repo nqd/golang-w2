@@ -49,8 +49,17 @@ func Find(hash string) (s *Secret, err error) {
 	if err != nil {
 		return
 	}
+	// check the condition
+	if r.RemainingViews <= 0 || r.ExpiresAt.Before(time.Now()) {
+		// remove this table
+		db.NamedExec("DELETE FROM secret WHERE hash=:hash", r)
+		s = nil
+		err = nil
+		return
+	}
 
 	r.RemainingViews--
+
 	db.NamedExec("UPDATE secret SET remaining_views=:remaining_views WHERE hash=:hash", r)
 	s = &r
 	return

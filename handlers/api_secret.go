@@ -12,6 +12,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,24 +26,25 @@ type secretIn struct {
 }
 
 func AddSecret(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	var in secretIn
+	r.ParseForm()
 
-	err := decoder.Decode(&in)
-	if err != nil {
+	secret := r.FormValue("secret")
+	expireAfterViews, err1 := strconv.Atoi(r.FormValue("expireAfterViews"))
+	expireAfter, err2 := strconv.Atoi(r.FormValue("expireAfter"))
+
+	if err1 != nil || err2 != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
-	defer r.Body.Close()
 
 	// generate a random key
 
 	out := Secret{
 		Hash:           uniuri.New(),
-		SecretText:     in.Secret,
+		SecretText:     secret,
 		CreatedAt:      time.Now(),
-		ExpiresAt:      time.Now().Add(time.Minute * time.Duration(in.ExpireAfter)),
-		RemainingViews: in.ExpireAfterViews,
+		ExpiresAt:      time.Now().Add(time.Minute * time.Duration(expireAfter)),
+		RemainingViews: int32(expireAfterViews),
 	}
 
 	out.Create()
@@ -55,6 +57,8 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	a := strings.Split(r.RequestURI, "/v1/secret/")
 	hash := a[1]
 
@@ -71,7 +75,6 @@ func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
 	}
 	outS, _ := json.Marshal(s)
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(outS)
 }
