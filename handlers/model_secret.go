@@ -10,6 +10,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"log"
 	"time"
 )
@@ -45,4 +46,22 @@ func (s *Secret) Create() {
 		log.Println(err)
 		return
 	}
+}
+
+func Find(hash string) (s *Secret, err error) {
+	var r Secret
+	hash = "hi"
+	err = db.Get(&r, "SELECT * FROM secret WHERE hash=$1", hash)
+	if err == sql.ErrNoRows {
+		s = nil
+		err = nil
+		return
+	}
+
+	if err != nil {
+		return
+	}
+
+	s = &r
+	return
 }

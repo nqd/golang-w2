@@ -12,6 +12,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
@@ -54,6 +55,23 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
+	a := strings.Split(r.RequestURI, "/v1/secret/")
+	hash := a[1]
+
+	s, err := Find(hash)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if s == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	outS, _ := json.Marshal(s)
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	w.Write(outS)
 }

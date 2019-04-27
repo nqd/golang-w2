@@ -9,8 +9,8 @@
 
 ### Required
 
-* [] Implement the API what listen and server on the endpoints what swagger.yaml describes.
-* [] The response can be XML or JSON
+* [ ] Implement the API what listen and server on the endpoints what swagger.yaml describes.
+* [ ] The response can be XML or JSON
 
 ### Bonus
 
