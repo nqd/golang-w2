@@ -11,8 +11,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"time"
+
+	"github.com/dchest/uniuri"
 )
 
 type secretIn struct {
@@ -32,12 +34,21 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	log.Println("---------")
-	log.Println(in)
+	// generate a random key
+
+	out := Secret{
+		Hash:           uniuri.New(),
+		SecretText:     in.Secret,
+		CreatedAt:      time.Now(),
+		ExpiresAt:      time.Now().Add(time.Minute * time.Duration(in.ExpireAfter)),
+		RemainingViews: in.ExpireAfterViews,
+	}
+
+	outS, _ := json.Marshal(out)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{}`))
+	w.Write(outS)
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
