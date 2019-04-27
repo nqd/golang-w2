@@ -44,6 +44,8 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 		RemainingViews: in.ExpireAfterViews,
 	}
 
+	out.Create()
+
 	outS, _ := json.Marshal(out)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
