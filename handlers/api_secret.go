@@ -11,6 +11,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"net/http"
 	"strconv"
 	"strings"
@@ -49,7 +50,12 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 
 	out.Create()
 
-	outS, _ := json.Marshal(out)
+	var outS []byte
+	if r.Header.Get("accept") == "application/xml" {
+		outS, _ = xml.Marshal(out)
+	} else {
+		outS, _ = json.Marshal(out)
+	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
