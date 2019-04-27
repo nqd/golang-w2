@@ -11,10 +11,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
-type secretInput struct {
+type secretIn struct {
 	Secret           string
 	ExpireAfterViews int32
 	ExpireAfter      int32
@@ -22,7 +23,7 @@ type secretInput struct {
 
 func AddSecret(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var in secretInput
+	var in secretIn
 
 	err := decoder.Decode(&in)
 	if err != nil {
@@ -31,8 +32,12 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+	log.Println("---------")
+	log.Println(in)
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
