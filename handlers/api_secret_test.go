@@ -34,11 +34,11 @@ func TestCreateSecret(t *testing.T) {
 	defer res.Body.Close()
 	assert.Equal(t, res.StatusCode, 200)
 
-	var resBody interface{}
+	var resBody Secret
 	json.NewDecoder(res.Body).Decode(&resBody)
-	assert.Contains(t, resBody, "hash")
-	assert.Contains(t, resBody, "secretText")
-	assert.Contains(t, resBody, "createdAt")
-	assert.Contains(t, resBody, "expiresAt")
-	assert.Contains(t, resBody, "remainingViews")
+	assert.Equal(t, resBody.SecretText, "foo")
+	assert.EqualValues(t, resBody.RemainingViews, 2)
+	assert.NotEmpty(t, resBody.Hash)
+	assert.NotEmpty(t, resBody.CreatedAt)
+	assert.NotEmpty(t, resBody.ExpiresAt)
 }
