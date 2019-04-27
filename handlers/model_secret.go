@@ -11,7 +11,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"time"
 )
 
@@ -33,24 +32,13 @@ type Secret struct {
 	RemainingViews int32 `json:"remainingViews,omitempty" db:"remaining_views"`
 }
 
-func (s *Secret) Create() {
-	tx := db.MustBegin()
-	res, err := tx.NamedExec("INSERT INTO secret(hash, secret_text, created_at, expires_at, remaining_views) VALUES (:hash, :secret_text, :created_at, :expires_at, :remaining_views)", s)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Printf("exec result %+v\n", res)
-	err = tx.Commit()
-	if err != nil {
-		log.Println(err)
-		return
-	}
+func (s *Secret) Create() (err error) {
+	_, err = db.NamedExec("INSERT INTO secret(hash, secret_text, created_at, expires_at, remaining_views) VALUES (:hash, :secret_text, :created_at, :expires_at, :remaining_views)", s)
+	return
 }
 
 func Find(hash string) (s *Secret, err error) {
 	var r Secret
-	hash = "hi"
 	err = db.Get(&r, "SELECT * FROM secret WHERE hash=$1", hash)
 	if err == sql.ErrNoRows {
 		s = nil
@@ -62,6 +50,8 @@ func Find(hash string) (s *Secret, err error) {
 		return
 	}
 
+	r.RemainingViews--
+	db.NamedExec("UPDATE secret SET remaining_views=:remaining_views WHERE hash=:hash", r)
 	s = &r
 	return
 }
