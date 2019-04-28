@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -62,7 +61,6 @@ func TestGetSecret(t *testing.T) {
 
 	var resBody Secret
 	json.NewDecoder(res.Body).Decode(&resBody)
-	log.Println(resBody)
 	assert.Equal(t, resBody.SecretText, "foo")
 	assert.EqualValues(t, resBody.RemainingViews, 1)
 	assert.NotEmpty(t, resBody.Hash)

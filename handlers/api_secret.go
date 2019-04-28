@@ -50,16 +50,8 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 
 	out.Create()
 
-	var outS []byte
-	if r.Header.Get("accept") == "application/xml" {
-		outS, _ = xml.Marshal(out)
-	} else {
-		outS, _ = json.Marshal(out)
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write(outS)
+	// hey, where is the middleware?
+	marshalRes(out, r.Header.Get("accept"), w)
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
@@ -79,8 +71,25 @@ func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	outS, _ := json.Marshal(s)
 
+	// hey, where is the middleware?
+	marshalRes(s, r.Header.Get("accept"), w)
+}
+
+func marshalRes(v interface{}, contentType string, w http.ResponseWriter) (err error) {
+	var outS []byte
+	if contentType == "application/xml" {
+		outS, err = xml.Marshal(v)
+		w.Header().Set("Content-Type", "application/xml; charset=UTF-8")
+	} else {
+		outS, err = json.Marshal(v)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(outS)
+	return
 }
