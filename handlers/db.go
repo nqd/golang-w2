@@ -12,7 +12,7 @@ var db *sqlx.DB
 
 func init() {
 	var err error
-	db, err = sqlx.Connect("postgres", "postgres://postgres:postgres@localhost/golangw2?sslmode=disable")
+	db, err = sqlx.Connect("postgres", "postgres://postgres:postgres@postgresql/golangw2?sslmode=disable")
 	if err != nil {
 		log.Fatalln(err)
 		os.Exit(1)
