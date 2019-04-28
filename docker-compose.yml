@@ -20,13 +20,14 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    volumes:
+    - ./migration/schema.sql:/docker-entrypoint-initdb.d/init.sql
 
   prometheus:
-    image: prom/prometheus:v2.9.2
-    # build: ./prometheus
-    # volumes:
-    #   - ./prometheus/config:/etc/prometheus
-    #   - /prometheus
+    build: ./prometheus
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - /prometheus
     ports:
       - "9090:9090"
     links:
@@ -34,7 +35,7 @@ services:
     restart: always
 
   grafana:
-    image: grafana/grafana:6.0.2
+    image: olivernadj/secret-api-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: 5ecret
     volumes:

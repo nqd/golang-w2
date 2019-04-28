@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Route struct {
@@ -22,6 +23,7 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
+	Monitor     bool
 }
 
 type Routes []Route
@@ -32,10 +34,16 @@ func NewRouter() *mux.Router {
 	sh := http.StripPrefix("/v1/ui/", http.FileServer(http.Dir("./swaggerui/")))
 	router.PathPrefix("/v1/ui/").Handler(sh)
 
+	summaryVec := BuildSummaryVec("http_response_time_milliseconds", "Latency Percentiles in Milliseconds")
+
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
+
+		if route.Monitor {
+			handler = WithMonitoring(handler, route, summaryVec)
+		}
 
 		router.
 			Methods(route.Method).
@@ -51,12 +59,18 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World!")
 }
 
+func Metrics(w http.ResponseWriter, r *http.Request) {
+	p := promhttp.Handler()
+	p.ServeHTTP(w, r)
+}
+
 var routes = Routes{
 	Route{
 		"Index",
 		"GET",
 		"/v1/",
 		Index,
+		true,
 	},
 
 	Route{
@@ -64,6 +78,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/v1/secret",
 		AddSecret,
+		true,
 	},
 
 	Route{
@@ -71,5 +86,14 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/v1/secret/{hash}",
 		GetSecretByHash,
+		true,
+	},
+
+	Route{
+		"Metrics",
+		strings.ToUpper("Get"),
+		"/metrics",
+		Metrics,
+		false,
 	},
 }
